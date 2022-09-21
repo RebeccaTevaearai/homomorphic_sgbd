@@ -51,44 +51,28 @@ using namespace std;
 
 extern Database database;
 
-template<typename T>
-void tfhe_Select(vector<Tfhe<int>>& cipher_result, Column<T>& column_cipher, T& condition_cipher, string op, const TFheGateBootstrappingCloudKeySet* bk) {
-    
-    for (int i = 0; i < column_cipher.values.size(); ++i) {
-        XLS_CHECK_OK(equality(cipher_result[i], column_cipher.values[i], condition_cipher, bk));
-    }
-}
+
 
 // CREATE
 void create_table(string tableName, vector<tuple<string, string>>& columnName_and_type) {
     
     Table t = {
         tableName,
-        (int)columnName_and_type.size(),
-        columnName_and_type,
-        {},
+        //(int)columnName_and_type.size(),
+        //columnName_and_type,
         {},
     };
     
     // Construire chaque colonne
     for (auto i : columnName_and_type) {
-        if (get<1>(i) == "int") {
-            Column<Tfhe<int>> c = {
-                tableName,
-                get<0>(i),
-                {},
-            };
-            t.c_int.push_back(move(c));
 
-        } else if (get<1>(i) == "char") {
-            Column<Tfhe<char>> c = {
-                tableName,
-                get<0>(i),
-                {},
-            };
-
-            t.c_char.push_back(move(c));
-        }
+        Column<Tfhe<int>> c = {
+            tableName,
+            get<0>(i),
+            get<1>(i),
+            {},
+        };
+        t.c_int.push_back(move(c));
     }
 
     database.tables.push_back(move(t));
@@ -98,93 +82,61 @@ void create_table(string tableName, vector<tuple<string, string>>& columnName_an
 
 
 // INSERT
-void insert_row(string tableName, vector<Tfhe<int>>& v_int, vector<Tfhe<char>>& v_char) {
+void insert_row(string tableName, vector<Tfhe<int>>& v_int) {
 
     int i = database.getTableIndex(tableName);
 
-            // vérifier si même nombre d'argument que de colonne
-            int size = v_int.size() + v_char.size();
+    // vérifier si même nombre d'argument que de colonne
+    if (v_int.size() != database.tables[i].c_int.size()) {
+        throw invalid_argument("INSERT ROW: nb values doesn't match nb of column");
+    }
 
-            if (size != database.tables[i].nbColumn) {
-                throw invalid_argument("INSERT ROW: nb values doesn't match nb of column");
-            }
+    for (int j = 0; j < v_int.size(); ++j) {
+        database.tables[i].c_int[j].values.push_back(move(v_int[j]));
+    }
     
-            int index_int = 0;
-            int index_char = 0;
-
-            for (auto c : database.tables[i].columnName_and_type) {
-                if (get<1>(c) == "int") {
-                    database.tables[i].c_int[index_int].values.push_back(move(v_int[index_int]));
-                    index_int++;
-                } else if (get<1>(c) == "char") {
-                    database.tables[i].c_char[index_char].values.push_back(move(v_char[index_char]));
-                    index_char++;
-                }
-            }
-            return;
+    return;
 }
-
 
 // SELECT
 template<typename T>
-int select_where(vector<Tfhe<int>>& cipher_result, string tableName, string columnName, T& condition_cipher, string op, const TFheGateBootstrappingCloudKeySet* bk) {
+Table * select_where(vector<Tfhe<int>>& cipher_result, string tableName, string columnName, T& condition_cipher, string op, const TFheGateBootstrappingCloudKeySet* bk) {
 
     int i = database.getTableIndex(tableName);
     
     int j = database.tables[i].getColumnIndex(columnName);
 
-    string type = get<1>(database.tables[i].columnName_and_type[j]);
+    //string type = get<1>(database.tables[i].columnName_and_type[j]);
 
-    if (type == "int") {
-            
-        for (int k = 0; k < database.tables[i].c_int.size(); ++k) {
-            if (database.tables[i].c_int[k].name == columnName) {
-                for (int l = 0; l < database.tables[i].c_int[k].values.size(); ++l) {
-                    if (op == "==") {
-                        XLS_CHECK_OK(equality_int(cipher_result[l], database.tables[i].c_int[k].values[l], condition_cipher, bk));
-                    } else if (op == ">") {
-                        XLS_CHECK_OK(superior_int(cipher_result[l], database.tables[i].c_int[k].values[l], condition_cipher, bk));
-                    } else if (op == "<") {
-                        XLS_CHECK_OK(inferior_int(cipher_result[l], database.tables[i].c_int[k].values[l], condition_cipher, bk));
-                    } else if (op == "!=") {
-                        XLS_CHECK_OK(inequality_int(cipher_result[l], database.tables[i].c_int[k].values[l], condition_cipher, bk));
-                    }        
-                }
-                return database.tables[i].c_int[k].values.size();
-            }
-        }
-
-    } else {
-        throw invalid_argument("select_where: wrong type");
+    for (int l = 0; l < database.tables[i].c_int[j].values.size(); ++l) {
+        if (op == "==") {
+            XLS_CHECK_OK(equality_int(cipher_result[l], database.tables[i].c_int[j].values[l], condition_cipher, bk));
+        } else if (op == ">") {
+            XLS_CHECK_OK(superior_int(cipher_result[l], database.tables[i].c_int[j].values[l], condition_cipher, bk));
+        } else if (op == "<") {
+            XLS_CHECK_OK(inferior_int(cipher_result[l], database.tables[i].c_int[j].values[l], condition_cipher, bk));
+        } else if (op == "!=") {
+            XLS_CHECK_OK(inequality_int(cipher_result[l], database.tables[i].c_int[j].values[l], condition_cipher, bk));
+        }        
     }
-            /*
-            else if (type == "char") {
-                for (int k = 0; k < database.tables[i].c_char.size(); ++k) {
-                    if (database.tables[i].c_char[k].name == columnName) {
-                        for (int l = 0; l < database.tables[i].c_char[k].values.size(); ++l) {
-                            XLS_CHECK_OK(equality(cipher_result[l], database.tables[i].c_char[k].values[l], condition_cipher, bk));
-                        }
-                    }
-                    return;
-                }
-            }
-            */
-
-    throw invalid_argument("select_where: ...");
+    
+    return &database.tables[i];
 }
 
-int select_distinct(vector<Tfhe<int>>& cipher_result, vector<Tfhe<int>>& cipher_tmp, string tableName, string columnName, const TFheGateBootstrappingCloudKeySet* bk) {
+
+Table * select_distinct(vector<Tfhe<int>>& cipher_result, vector<Tfhe<int>>& cipher_tmp, string tableName, string columnName, const TFheGateBootstrappingCloudKeySet* bk) {
     int i = database.getTableIndex(tableName);
     
-    int j = database.tables[i].getColumnIntIndex(columnName);
+    int j = database.tables[i].getColumnIndex(columnName);
 
     int table_size = database.tables[i].c_int[j].values.size();
 
     // TODO: check if table is empty
 
     //XLS_CHECK_OK(equality_int(cipher_tmp[0], database.tables[i].c_int[j].values[0], database.tables[i].c_int[j].values[0], bk));
+    
     for (int k = 1; k < table_size; ++k) {
-        for (int l = k -1; l >= 0; --l) {
+        for (int l = k - 1; l >= 0; --l) {
             if (l == k) {
                 XLS_CHECK_OK(inequality_int(cipher_result[k], database.tables[i].c_int[j].values[l], database.tables[i].c_int[j].values[k], bk));
             } else {
@@ -194,13 +146,21 @@ int select_distinct(vector<Tfhe<int>>& cipher_result, vector<Tfhe<int>>& cipher_
         }
     }
 
-    return database.tables[i].c_int[j].values.size();
+    return &database.tables[i];
+}
+
+void tfhe_count(Tfhe<int>& cipher_result, vector<Tfhe<int>>& cipher_index, string tableName, const TFheGateBootstrappingCloudKeySet* bk) {
+
+    for (int i = 0; i < cipher_index.size(); ++i) {
+        XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, cipher_index[i], bk));
+    }
+
 }
 
 void sum(Tfhe<int>& cipher_result, string tableName, string columnName, const TFheGateBootstrappingCloudKeySet* bk) {
+
     int i = database.getTableIndex(tableName);
-    
-    int j = database.tables[i].getColumnIntIndex(columnName);
+    int j = database.tables[i].getColumnIndex(columnName);
 
     int table_size = database.tables[i].c_int[j].values.size();
 
@@ -221,9 +181,9 @@ void sum(Tfhe<int>& cipher_result, string tableName, string columnName, const TF
 
 
 void avg(Tfhe<int>& cipher_r, Tfhe<int>& cipher_result, vector<Tfhe<int>>& cipher_tmp, string tableName, string columnName, const TFheGateBootstrappingCloudKeySet* bk) {
-    int i = database.getTableIndex(tableName);
     
-    int j = database.tables[i].getColumnIntIndex(columnName);
+    int i = database.getTableIndex(tableName);
+    int j = database.tables[i].getColumnIndex(columnName);
 
     int table_size = database.tables[i].c_int[j].values.size();
 
@@ -258,8 +218,8 @@ tuple<int, int> inner_join(vector<Tfhe<int>>& cipher_result, string tableName1, 
     int table_index1 = database.getTableIndex(tableName1);
     int table_index2 = database.getTableIndex(tableName2);
 
-    int column_index_1 = database.tables[table_index1].getColumnIntIndex(columnName1);
-    int column_index_2 = database.tables[table_index2].getColumnIntIndex(columnName2);
+    int column_index_1 = database.tables[table_index1].getColumnIndex(columnName1);
+    int column_index_2 = database.tables[table_index2].getColumnIndex(columnName2);
 
     int k = 0;
     int table_1_size = database.tables[table_index1].c_int[column_index_1].values.size();
@@ -276,12 +236,42 @@ tuple<int, int> inner_join(vector<Tfhe<int>>& cipher_result, string tableName1, 
 
 }
 
+/*
+void query_handler(vector<Tfhe<int>>& cipher_result, vector<vector<Tfhe<int>>>& cipher_tmp, vector<Query> queries, const TFheGateBootstrappingCloudKeySet* bk) {
 
+    // TODO: verifier si asser de taille de cipher_result
+
+    for (int i = 0; i < queries.size(); ++i) {
+        if (queries[i].name == "select_where") {
+            select_where(cipher_result, queries[i].tablesNames[0], queries[i].arg[0], queries[i].arg[1], queries[i].op, bk);
+
+        } else if (queries[i].name == "count") {
+
+        } else if (queries[i].name == "avg") {
+
+        } else if (queries[i].name == "sum") {
+
+        } else if (queries[i].name == "inner_join") {
+
+        } else {
+            // throw error
+        }
+    }
+
+
+}
+*/
 // DELETE
+/*
+void delete() {
 
+}
+*/
 // UPDATE
+
 /*
 void update(vector<Tfhe<int>>& cipher_tmp, ) {
+    
     
 }
 */
