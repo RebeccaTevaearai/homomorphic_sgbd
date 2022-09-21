@@ -37,19 +37,15 @@ using namespace std;
 
 //printf("Current working dir: %s\n", get_current_dir_name());
 
-void insert(string tableName, const vector<int>& v_int, const vector<char>& v_char, TFHESecretKeySet& key) {
+
+void insert(string tableName, const vector<int>& v_int, TFHESecretKeySet& key) {
     vector<Tfhe<int>> v_int_cipher = {};
-    vector<Tfhe<char>> v_char_cipher = {};
 
     for(int i = 0; i < v_int.size(); ++i) {
         v_int_cipher.push_back(Tfhe<int>::Encrypt(v_int[i], key));
     }
 
-    for(int i = 0; i < v_char.size(); ++i) {
-        v_char_cipher.push_back(Tfhe<char>::Encrypt(v_char[i], key));
-    }
-
-    insert_row(tableName, v_int_cipher, v_char_cipher);
+    insert_row(tableName, v_int_cipher);
 
     return;
 }
@@ -68,13 +64,12 @@ void create_database(TFHESecretKeySet& key) {
     int v3 = 32;
 
     vector<int> v_int = {};
-    vector<char> v_char = {};
 
     v_int.push_back(v1);
-    v_char.push_back(v2);
+    v_int.push_back((int)v2);
     v_int.push_back(v3);
 
-    insert("Employes", v_int, v_char, key);
+    insert("Employes", v_int, key);
 
     // INSERT INTO Employes VALUES ([1], [a], [27]) 
 
@@ -83,13 +78,12 @@ void create_database(TFHESecretKeySet& key) {
     int v6 = 27;
 
     v_int = {};
-    v_char = {};
 
     v_int.push_back(v4);
-    v_char.push_back(v5);
+    v_int.push_back((int)v5);
     v_int.push_back(v6);
 
-    insert("Employes", v_int, v_char, key);
+    insert("Employes", v_int, key);
 
     // INSERT INTO Employes VALUES ([2], [m], [32]]) 
 
@@ -98,13 +92,12 @@ void create_database(TFHESecretKeySet& key) {
     v3 = 32;
 
     v_int = {};
-    v_char = {};
 
     v_int.push_back(v1);
-    v_char.push_back(v2);
+    v_int.push_back((int)v2);
     v_int.push_back(v3);
 
-    insert("Employes", v_int, v_char, key);
+    insert("Employes", v_int, key);
 
     // INSERT INTO Employes VALUES ([3], [l], [49]) 
 /*
@@ -113,13 +106,12 @@ void create_database(TFHESecretKeySet& key) {
     v3 = 49;
 
     v_int = {};
-    v_char = {};
 
     v_int.push_back(v1);
-    v_char.push_back(v2);
+    v_int.push_back((int)v2);
     v_int.push_back(v3);
 
-    insert("Employes", v_int, v_char, key);
+    insert("Employes", v_int, key);
 */
 
     // CREATE Table Departements (ID, nom, employe_id)
@@ -134,13 +126,12 @@ void create_database(TFHESecretKeySet& key) {
     v3 = 2;
 
     v_int = {};
-    v_char = {};
 
     v_int.push_back(v1);
-    v_char.push_back(v2);
+    v_int.push_back((int)v2);
     v_int.push_back(v3);
 
-    insert("Departements", v_int, v_char, key);
+    insert("Departements", v_int, key);
 
     // INSERT INTO Departements VALUES ([1], [g], [0]) 
 
@@ -149,13 +140,12 @@ void create_database(TFHESecretKeySet& key) {
     v3 = 0;
 
     v_int = {};
-    v_char = {};
 
     v_int.push_back(v1);
-    v_char.push_back(v2);
+    v_int.push_back((int)v2);
     v_int.push_back(v3);
 
-    insert("Departements", v_int, v_char, key);
+    insert("Departements", v_int, key);
 
 }
 
@@ -231,7 +221,6 @@ void query_where(TFHESecretKeySet& key, TFHEParameters& params) {
     string op = "==";
     int condition = 32;
 
-
     auto condition_cipher = Tfhe<int>::Encrypt(condition, key);
 
     vector<Tfhe<int>> cipher_result = {};
@@ -244,30 +233,26 @@ void query_where(TFHESecretKeySet& key, TFHEParameters& params) {
     absl::Time start_time = absl::Now();
     double cpu_start_time = clock();
     
-    int size = select_where(cipher_result, tableName, columnName, condition_cipher, op, key.cloud());
+    Table * t = select_where(cipher_result, tableName, columnName, condition_cipher, op, key.cloud());
 
     double cpu_end_time = clock();
     absl::Time end_time = absl::Now();
 
-    int tableIndex = database.getTableIndex(tableName);
-
     vector<vector<string>> result_row = {};
-    vector<string> colNames = database.tables[tableIndex].getColumnName();
+    vector<string> colNames = t->getColumnName();
     int nb_col = colNames.size();
 
     result_row.push_back(colNames);
 
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < t->getNbRow(); ++i) {
         if (cipher_result[i].Decrypt(key) == 1) {
-            vector<string> v = database.tables[tableIndex].get_row(i, key);
+            vector<string> v = t->get_row(i, key);
             result_row.push_back(v);
         }    
     }
 
-
     cout << "\nResult:\n";
     display_result("Employes", result_row, nb_col);
-
 
 
     cout << "\t\t\t\t\tComputation done" << endl;
@@ -329,35 +314,35 @@ void query_distinct(TFHESecretKeySet& key, TFHEParameters& params) {
     absl::Time start_time = absl::Now();
     double cpu_start_time = clock();
     
-    int size = select_distinct(cipher_result, cipher_tmp, tableName, columnName, key.cloud());
+    Table * t = select_distinct(cipher_result, cipher_tmp, tableName, columnName, key.cloud());
 
     double cpu_end_time = clock();
     absl::Time end_time = absl::Now();
 
-
-    int tableIndex = database.getTableIndex(tableName);
-
     vector<vector<string>> result_row = {};
-    vector<string> colNames = database.tables[tableIndex].getColumnName();
+    vector<string> colNames = t->getColumnName();
     int nb_col = colNames.size();
 
     result_row.push_back(colNames);
 
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < t->getNbRow(); ++i) {
         if (i == 0) {
-            vector<string> v = database.tables[tableIndex].get_row(i, key);
+            cout << "1\n";
+            vector<string> v = t->get_row(i, key);
             result_row.push_back(v);
         } else {
             if (cipher_result[i].Decrypt(key) == 1) {
-                vector<string> v = database.tables[tableIndex].get_row(i, key);
+                cout << "1\n";
+                vector<string> v = t->get_row(i, key);
                 result_row.push_back(v);
-            }    
+            } else {
+                cout << "0\n";
+            }
         }
     }
 
     cout << "\nResult:\n";
     display_result(tableName, result_row, nb_col);
-
 
 
     cout << "\t\t\t\t\tComputation done" << endl;
@@ -384,7 +369,7 @@ void query_innerjoin(TFHESecretKeySet& key, TFHEParameters& params) {
 
     absl::Time start_time = absl::Now();
     double cpu_start_time = clock();
-    
+
     tuple<int, int> size = inner_join(index_cipher, tableName_1, tableName_2, columnName_1, columnName_2, key.cloud());
 
     double cpu_end_time = clock();
@@ -497,7 +482,7 @@ void show_tables(TFHESecretKeySet& key) {
         vector<vector<string>> result_row = {};
         vector<string> colNames = database.tables[i].getColumnName();
         result_row.push_back(colNames);
-        int nb_col = database.tables[i].nbColumn;
+        int nb_col = database.tables[i].c_int.size();
         int nb_row = database.tables[i].c_int[0].values.size();
 
         for (int j = 0; j < nb_row; ++j) {
@@ -517,6 +502,12 @@ int main() {
     TFHESecretKeySet key(params, kSeed);
 
     create_database(key);
+
+    // load default database
+    // load script
+    // show table
+    // query -> select, insert, delete (index)
+
 
     while (true) {
         int input;
