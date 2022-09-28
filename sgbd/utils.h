@@ -1,24 +1,35 @@
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef SGBD_UTILS_H_
+#define SGBD_UTILS_H_
 
 #include <exception>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include <string>
 #include <tuple>
 
 #include "transpiler/data/tfhe_data.h"
 
-using namespace std;
+using std::string;
+using std::vector;
 
-struct Query {
-    string name;
-    vector<string> tablesNames;
-    vector<Tfhe<int>> arg;
-    vector<string> op;
-};
+size_t split(const string &txt, vector<string> &strs, char ch) {
+    size_t pos = txt.find(ch);
+    size_t initialPos = 0;
+    strs.clear();
+
+    while(pos != string::npos) {
+        strs.push_back(txt.substr(initialPos, pos - initialPos));
+        initialPos = pos + 1;
+
+        pos = txt.find(ch, initialPos);
+    }
+
+    strs.push_back(txt.substr(initialPos, std::min(pos,txt.size()) - initialPos + 1));
+
+    return strs.size();
+}
+
 
 template<typename T>
 struct Column {
@@ -28,15 +39,17 @@ struct Column {
     vector<T> values;
 };
 
+
 struct Table {
     string name;
     vector<Column<Tfhe<int>>> c_int;
-    //int nbColumn;
-    //vector<tuple<string, string>> columnName_and_type;
-    //vector<Column<Tfhe<char>>> c_char;
 
     int getNbRow() {
-        return c_int[0].values.size();
+        if (c_int.size() == 0) {
+            return 0;
+        } else {
+            return c_int[0].values.size();
+        }
     }
 
     int getColumnIndex(string columnName) {
@@ -46,17 +59,7 @@ struct Table {
             }
         }
 
-        throw invalid_argument("Table, getColumnIndex: no column found");
-    }
-
-    Column<Tfhe<int>> * getColumnPointer(string columnName) {
-        for (int i = 0; i < c_int.size(); ++i) {
-            if (c_int[i].name == columnName) {
-                return &c_int[i];
-            }
-        }
-
-        throw invalid_argument("Table, getColumnIndex: no column found");
+        throw std::invalid_argument("Table, getColumnIndex: no column found");
     }
 
     vector<string> getColumnName() {
@@ -71,6 +74,10 @@ struct Table {
 
         vector<string> row = {};
 
+        if (index > this->getNbRow()) {
+            return row;
+        }
+
         for(int i = 0; i < c_int.size(); ++i) {
             auto tmp = c_int[i].values[index].Decrypt(key);
             if (c_int[i].type == "char") {
@@ -79,7 +86,7 @@ struct Table {
                 str += c;
                 row.push_back(str);
             } else {
-                row.push_back(to_string(tmp));
+                row.push_back(std::to_string(tmp));
             }
         }
 
@@ -87,6 +94,7 @@ struct Table {
     }
 
 };
+
 
 struct Database {
     vector<Table> tables;
@@ -97,15 +105,14 @@ struct Database {
                 return i;
             }
         } 
-        throw invalid_argument("Database, getTableIndex: no table found");
+        throw std::invalid_argument("Database, getTableIndex: no table found");
     }
 };
+
 
 Database database = {
     {},
 };
 
 
-
-
-#endif /* _UTILS_H_ */
+#endif /* SGBD_UTILS_H_ */
