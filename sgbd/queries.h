@@ -1,5 +1,5 @@
-#ifndef _QUERY_H_
-#define _QUERY_H_
+#ifndef SGBD_QUERIES_H_
+#define SGBD_QUERIES_H_
 
 #include <cstddef>
 #include <stdlib.h>
@@ -8,7 +8,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-//#include <array>
 #include <unistd.h>
 #include <stdio.h>
 #include <tuple>
@@ -30,14 +29,8 @@
 #include "transpiler/examples/sgbd/utils.h"
 #include "transpiler/examples/sgbd/server.h"
 
-constexpr int kMainMinimumLambda = 120;
-// Max number of row for a Table.
 constexpr int dbSize = 20;
 const int SPACE = 10;
-
-// Random seed for key generation
-// Note: In real applications, a cryptographically secure seed needs to be used.
-//constexpr std::array<uint32_t, 3> kSeed = {314, 1592, 657};
 
 using std::string;
 using std::vector;
@@ -57,14 +50,7 @@ void insert(string tableName, const vector<int>& v_int, TFHESecretKeySet& key) {
 
 void load_script(string path, TFHESecretKeySet& key) {
 
-    /*
-    string scriptName;
-    std::cout << "Enter script full path: ";
-    std::cin >> scriptName;
-    */
-
     std::fstream file;
-
     file.open(path, std::ios::in);
 
     if (file.is_open()) { 
@@ -533,252 +519,5 @@ void show_tables(TFHESecretKeySet& key) {
     }
 
 } 
-
-
-string get_tableName_from_query(string query, int index) {
-    vector<string> v;
-    split(query, v, ' ');
-
-    return v[index];
-}
-
-
-string get_tableName_from_select_query(string query) {
-    size_t pos = query.find("FROM");
-
-    if (pos == string::npos) {
-        throw std::invalid_argument("get_tableName_from_select_query: FROM not found");
-    }
-
-    pos += 5;
-    size_t pos_end = query.find(' ', pos);
-
-    return query.substr(pos, pos_end - pos);
-}
-
-
-vector<string> get_columns_from_select_query(string query) {
-    vector<string> columns = {};
-    size_t pos_start = query.find('(');
-    size_t pos_end = query.find(')');
-
-    if ((pos_start == string::npos) || pos_end == string::npos) {
-        throw std::invalid_argument("get_columns_from_select_query: no column found");
-    }
-
-    string tmp = query.substr(pos_start + 1, pos_end - pos_start - 1);
-    vector<string> strs;
-    split(tmp, strs, ',');
-
-    for (int i = 0; i < strs.size(); ++i) {
-        strs[i].erase(remove(strs[i].begin(), strs[i].end(), ' '), strs[i].end());
-        columns.push_back(strs[i]);
-    }       
-
-    return columns;
-}
-
-
-void handle_select(string query, TFHESecretKeySet& key, TFHEParameters& params) {
-    try {
-        string tableName = get_tableName_from_select_query(query);
-        vector<string> columnsNames = get_columns_from_select_query(query);
-        vector<string> queries = {};
-
-        if (query.find("DISTINCT") != string::npos) {
-            queries.push_back("DISTINCT");
-
-        } else if (query.find("SUM") != string::npos) {
-            queries.push_back("SUM");
-
-        } else if (query.find("AVG") != string::npos) {
-            queries.push_back("AVG");
-
-        } else if (query.find("COUNT") != string::npos) {
-            queries.push_back("COUNT");
-
-        }
-
-        size_t pos_join = query.find("JOIN");
-        vector<string> join_params = {};
-
-        if (pos_join != string::npos) {
-            queries.push_back("JOIN");
-            string join_param = query.substr(pos_join + 5);
-            split(join_param, join_params, ' ');
-
-            size_t pos_on = query.find("ON");
-            string tableName2 = query.substr(pos_join + 5, pos_on - pos_join - pos_join + 5);
-
-            join_params.push_back(tableName2);
-        }
-
-        size_t pos_where = query.find("WHERE");
-        vector<string> where_params = {};
-
-        if (pos_where != string::npos) {
-            queries.push_back("WHERE");
-            string where_param = query.substr(pos_where + 6);
-            split(where_param, where_params, ' ');        
-        }
-
-        if (queries.size() == 1) {
-            if (queries[0] == "DISTINCT") {
-                query_distinct(tableName, columnsNames[0], key, params);
-
-            } else if (queries[0] == "COUNT") {
-                query_count(tableName);
-
-            } else if (queries[0] == "SUM") {
-                query_sum(tableName, columnsNames[0], key, params);
-
-            } else if (queries[0] == "AVG") {
-                query_avg(tableName, columnsNames[0], key, params);
-
-            } else if (queries[0] == "WHERE") {
-                query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
-
-            } else if (queries[0] == "JOIN") {
-                query_join(tableName, join_params[0], join_params[2], join_params[4], key, params);
-            }
-
-        } else if (queries.size() == 2) {
-            if (queries[1] == "WHERE") {
-                if (queries[0] == "SUM") {
-                    query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
-
-                } else if (queries[0] == "COUNT") {
-                    query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
-
-                } else {
-                    std::cout << "Not implemented" << std::endl;
-                }
-            } else {
-                std::cout << "Incorrect format or not implemented" << std::endl;
-            }
-        } else {
-            std::cout << "Incorrect format or not implemented" << std::endl;
-        }
-        return;
-
-    } catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
-        return;
-    }
-}
-
-
-void handle_insert(string query, TFHESecretKeySet& key) {
-
-    string tableName = get_tableName_from_query(query, 2);
-    size_t pos_start = query.find('(');
-    size_t pos_end = query.find(')');
-
-    if (pos_start == string::npos || pos_end == string::npos) {
-        std::cout << "Incorrect format for value" << std::endl;
-        return;
-    } 
-
-    string value = query.substr(pos_start + 1, pos_end - pos_start - 1);
-    vector<string> strs;
-    split(value, strs, ',');
-
-    vector<int> v_int = {};
-    for (int i = 0; i < strs.size(); ++i) {
-
-        if (strs[i].find('\'') != string::npos) {
-
-            vector<string> tmp;
-            split(strs[i], tmp, '\'');
-            char c = tmp[1][0];
-            v_int.push_back((int)c);
-
-        } else {
-            try {
-                v_int.push_back(stoi(strs[i]));
-            } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
-                return;
-            } 
-        }
-    }
-
-    insert(tableName, v_int, key);
-
-    return;
-}
-
-
-void handle_create(string query) {
-
-    string tableName = get_tableName_from_query(query, 2);
-
-    size_t pos_start = query.find('(');
-    size_t pos_end = query.find(')');
-
-    if (pos_start == string::npos || pos_end == string::npos) {
-        std::cout << "Incorrect format for value" << std::endl;
-        return;
-    } 
-
-    string value = query.substr(pos_start + 1, pos_end - pos_start - 1);
-
-    vector<std::tuple<string, string>> v = {};
-    vector<string> strs;
-    split(value, strs, ',');
-
-    for (int i = 0; i < strs.size(); ++i) {
-        vector<string> val;
-        split(strs[i], val, ' ');
-        if (val.size() == 3) {
-            v.push_back(std::make_tuple(val[1], val[2]));
-        } else if (val.size() == 2) {
-            v.push_back(std::make_tuple(val[0], val[1]));
-        } else {
-            std::cout << "Incorrect format" << std::endl;
-            return;
-        }
-    }
-
-    create_table(tableName, v);
-
-    return;
-}
-
-
-void handle_query(TFHESecretKeySet& key, TFHEParameters& params) {
-    string query = "";
-    
-    while(true) {
-        std::cout << "Enter query (on one line, end with ;): \n";
-
-        char c;
-        while ((c = getchar()) != ';') {
-            query.push_back(c);
-        }
-        break;
-        
-    }
-    
-    size_t pos = query.find(' ');
-    string type;
-    type = query.substr(1, pos - 1);
-
-    if (type == "CREATE") {
-        handle_create(query);
-
-    } else if (type == "INSERT") {
-        handle_insert(query, key);
-
-    } else if (type == "SELECT") {
-        handle_select(query, key, params);
-
-    } else {
-        std::cout << "Incorrect format" << std::endl;
-        return;
-    }
-
-    return;
-}
 
 #endif /* _QUERY_H_ */
