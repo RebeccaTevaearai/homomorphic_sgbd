@@ -1,0 +1,118 @@
+#ifndef SGBD_UTILS_H_
+#define SGBD_UTILS_H_
+
+#include <exception>
+#include <stdexcept>
+#include <stdlib.h>
+#include <string>
+#include <vector>
+#include <tuple>
+
+#include "transpiler/data/cleartext_data.h"
+
+using std::string;
+using std::vector;
+
+size_t split(const string &txt, vector<string> &strs, char ch) {
+    size_t pos = txt.find(ch);
+    size_t initialPos = 0;
+    strs.clear();
+
+    while(pos != string::npos) {
+        strs.push_back(txt.substr(initialPos, pos - initialPos));
+        initialPos = pos + 1;
+
+        pos = txt.find(ch, initialPos);
+    }
+
+    strs.push_back(txt.substr(initialPos, std::min(pos,txt.size()) - initialPos + 1));
+
+    return strs.size();
+}
+
+
+template<typename T>
+struct Column {
+    string tableName;
+    string name;
+    string type;
+    vector<T> values;
+};
+
+
+struct Table {
+    string name;
+    vector<Column<Encoded<short>>> c_short;
+
+    int getNbRow() {
+        if (c_short.size() == 0) {
+            return 0;
+        } else {
+            return c_short[0].values.size();
+        }
+    }
+
+    int getColumnIndex(string columnName) {
+        for (int i = 0; i < c_short.size(); ++i) {
+            if (c_short[i].name == columnName) {
+                return i;
+            }
+        }
+
+        throw std::invalid_argument("Table, getColumnIndex: no column found");
+    }
+
+    vector<string> getColumnName() {
+        vector<string> v = {};
+        for (int i = 0; i < c_short.size(); ++i) {
+            v.push_back(c_short[i].name);
+        }
+        return v;
+    }
+
+    vector<string> get_row(int index) {
+
+        vector<string> row = {};
+
+        if (index > this->getNbRow()) {
+            return row;
+        }
+
+        for(int i = 0; i < c_short.size(); ++i) {
+            auto tmp = c_short[i].values[index].Decode();
+            if (c_short[i].type == "char") {
+                char c = char(tmp);
+                string str;
+                str += c;
+                row.push_back(str);
+            } else {
+                row.push_back(std::to_string(tmp));
+            }
+        }
+
+        return row;
+    }
+
+};
+
+
+struct Database {
+    vector<Table> tables;
+
+    int getTableIndex(string tableName) { 
+        for (int i = 0; i < tables.size(); ++i) {
+            if (tables[i].name == tableName) {
+                return i;
+            }
+        } 
+        throw std::invalid_argument("Database, getTableIndex: no table found");
+    }
+};
+
+
+Database database = {
+    {},
+};
+
+
+#endif /* SGBD_UTILS_H_ */

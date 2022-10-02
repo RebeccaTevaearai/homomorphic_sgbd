@@ -1,0 +1,33 @@
+CREATE TABLE Employes (ID short, nom char, age short);
+
+CREATE TABLE Departements (ID short, nom char, employe_id short);
+
+INSERT INTO Employes VALUES (0, 'b', 32);
+INSERT INTO Employes VALUES (1, 'a', 27);
+INSERT INTO Employes VALUES (2, 'm', 32);
+INSERT INTO Employes VALUES (3, 'l', 49);
+INSERT INTO Employes VALUES (4, 'c', 18);
+INSERT INTO Employes VALUES (5, 'd', 18);
+INSERT INTO Employes VALUES (6, 's', 27);
+INSERT INTO Employes VALUES (7, 'p', 32);
+INSERT INTO Employes VALUES (8, 'q', 33);
+INSERT INTO Employes VALUES (9, 'f', 89);
+INSERT INTO Employes VALUES (10, 'f', 34);
+INSERT INTO Employes VALUES (11, 'c', 54);
+INSERT INTO Employes VALUES (12, 'f', 51);
+INSERT INTO Employes VALUES (13, 'f', 23);
+INSERT INTO Employes VALUES (14, 'q', 77);
+INSERT INTO Employes VALUES (15, 's', 64);
+INSERT INTO Employes VALUES (16, 'r', 17);
+INSERT INTO Employes VALUES (17, 'a', 12);
+INSERT INTO Employes VALUES (18, 'd', 15);
+INSERT INTO Employes VALUES (19, 'e', 22);
+
+
+INSERT INTO Departements VALUES (0, 'f', 3);
+INSERT INTO Departements VALUES (1, 'g', 0);
+INSERT INTO Departements VALUES (2, 'm', 9);
+INSERT INTO Departements VALUES (3, 'c', 5);
+INSERT INTO Departements VALUES (4, 'p', 0);
+INSERT INTO Departements VALUES (5, 'g', 2);
+

@@ -1,0 +1,20 @@
+CREATE TABLE Employes (ID short, nom char, age short);
+
+CREATE TABLE Departements (ID short, nom char, employe_id short);
+
+INSERT INTO Employes VALUES (0, 'b', 32);
+INSERT INTO Employes VALUES (1, 'a', 27);
+INSERT INTO Employes VALUES (2, 'm', 32);
+INSERT INTO Employes VALUES (3, 'l', 49);
+INSERT INTO Employes VALUES (4, 'c', 18);
+INSERT INTO Employes VALUES (5, 'd', 18);
+INSERT INTO Employes VALUES (6, 's', 27);
+INSERT INTO Employes VALUES (7, 'p', 32);
+INSERT INTO Employes VALUES (8, 'q', 33);
+INSERT INTO Employes VALUES (9, 'f', 89);
+
+INSERT INTO Departements VALUES (0, 'f', 3);
+INSERT INTO Departements VALUES (1, 'g', 0);
+INSERT INTO Departements VALUES (2, 'm', 9);
+
+
