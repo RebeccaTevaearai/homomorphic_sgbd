@@ -1,0 +1,23 @@
+CREATE TABLE Operator (ID int, name char, class char);
+
+INSERT INTO Employes VALUES (0, 'b', 32);
+
+SELECT * FROM tableName WHERE columnName OP condition;
+SELECT DISTINCT(columnName) FROM Employes;
+SELECT SUM(age) FROM Employes;
+SELECT AVG(column) FROM tableName;
+SELECT SUM(age) FROM Employes WHERE age > 30;
+SELECT * FROM tableName_1 INNER JOIN tableName_2 ON columnName_1 = columName_2;
+SELECT * FROM tableName_1 INNER JOIN tableName_2 ON columnName_1 = columName_2 WHERE columnName OP condition;
+SELECT (*) FROM Employes INNER JOIN Departements ON ID = employe_id;
+
+SELECT (columnName1, columnName2) FROM tableName WHERE columnName OP condition;
+
+/home/kali/reb/fully-homomorphic-encryption-main/transpiler/examples/sgbd_short/data/script_default
+
+--test_filter=PerformanceTest.SELECT_DISTINCT_AGE_FROM_EMPLOYES
+--test_filter=PerformanceTest.SELECT_SUM_AGE_FROM_EMPLOYES
+
+../bazel-4.0.0-linux-x86_64 run --test_filter=PerformanceTest.SELECT_SUM_AGE_FROM_EMPLOYES //transpiler/examples/sgbd:performance_test
+SELECT_AVG_AGE_FROM_EMPLOYES
+../bazel-4.0.0-linux-x86_64 run --test_filter=PerformanceTest.SELECT_AVG_AGE_FROM_EMPLOYES //transpiler/examples/sgbd:performance_test
