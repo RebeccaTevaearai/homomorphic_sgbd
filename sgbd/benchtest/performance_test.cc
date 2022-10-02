@@ -1,5 +1,5 @@
 #include "transpiler/examples/sgbd/utils.h"
-#include "transpiler/examples/sgbd/query.h"
+#include "transpiler/examples/sgbd/queries.h"
 #include "transpiler/examples/sgbd/server.h"
 
 #include "transpiler/data/tfhe_data.h"
@@ -7,10 +7,7 @@
 #include <string>
 #include <stdlib.h>
 
-//constexpr int kMainMinimumLambda = 120;
-// Max number of row for a Table.
-//constexpr int dbSize = 20;
-//const int SPACE = 10;
+constexpr int kMainMinimumLambda = 120;
 
 // Random seed for key generation
 // Note: In real applications, a cryptographically secure seed needs to be used.
@@ -194,7 +191,7 @@ TEST(PerformanceTest, SELECT_SUM_AGE_FROM_EMPLOYES) {
     
 }
 
-/*
+
 TEST(PerformanceTest, SELECT_AVG_AGE_FROM_EMPLOYES) {
     delete_db();
     load_script(small_db_path, key); 
@@ -229,7 +226,7 @@ TEST(PerformanceTest, SELECT_AVG_AGE_FROM_EMPLOYES) {
         << (cpu_end_time - cpu_start_time) / 1'000'000 << " secs" << std::endl << std::endl;
     
 }
-*/
+
 TEST(PerformanceTest, SELECT_COUNT_FROM_EMPLOYES_WHERE_AGE_INFERIOR_33) {
     delete_db();
     load_script(small_db_path, key); 
@@ -269,5 +266,49 @@ TEST(PerformanceTest, SELECT_COUNT_FROM_EMPLOYES_WHERE_AGE_INFERIOR_33) {
     
 }
 
+TEST(PerformanceTest, SELECT_SUM_AGE_FROM_EMPLOYES_WHERE_AGE_SUPERIOR_28) {
+    delete_db();
+    load_script(small_db_path, key); 
+
+    const char* tableName = "Employes";
+    const char* columnName = "age";
+    const char* op = ">";
+    int condition = 28;
+
+    auto condition_cipher = Tfhe<int>::Encrypt(condition, key);
+
+    Tfhe<int> cipher_result(params);
+    vector<Tfhe<int>> cipher_tmp = {};
+
+    for (int i = 0; i < dbSize; ++i) {
+        Tfhe<int> index(params);
+        cipher_tmp.push_back(std::move(index));
+    }
+
+    vector<Tfhe<int>> cipher_tmp_2 = {};
+
+    for (int i = 0; i < dbSize; ++i) {
+        Tfhe<int> index(params);
+        cipher_tmp_2.push_back(std::move(index));
+    }
+
+    absl::Time start_time = absl::Now();
+    double cpu_start_time = clock();
+    
+    sum_where(cipher_result, cipher_tmp, cipher_tmp_2, tableName, columnName, condition_cipher, op, key.cloud());
+
+    double cpu_end_time = clock();
+    absl::Time end_time = absl::Now();
+
+    auto result = cipher_result.Decrypt(key);
+    
+    EXPECT_EQ(result, 113);
+    
+    std::cout << std::endl << "\t\t\t\t\tTotal time: "
+        << absl::ToDoubleSeconds(end_time - start_time) << " secs" << std::endl;
+    std::cout << "\t\t\t\t\t  CPU time: "
+        << (cpu_end_time - cpu_start_time) / 1'000'000 << " secs" << std::endl << std::endl;
+    
+}
 
 
