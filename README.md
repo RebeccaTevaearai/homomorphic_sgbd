@@ -25,7 +25,7 @@ To run the prototype using cleartext values
 bazel run //transpiler/examples/sgbd_cleartext:sgbd_cleartext
 ```
 
-### Script
+## Script
 A script can be loaded with the `load script` function to create a database, enter the full path of the file when prompted. Use one of the default script contained in the `/data` folder or create a new one. The script need to respect the following format: 
 
 ```
@@ -40,10 +40,11 @@ The type of the column can be either `int` or `char` for the prototype using enc
 
 The prototype does not manage constraint like primary key and other, therefor they cannot be declare in the script.
 
-### Query
+## Query
 To start using queries, choose the `query` function and enter the query on one line, with a `;` to end it.
 
 #### CREATE TABLE tableName (columnName1 type, columnName2 type, ...);
+Create a new table in the database. There is no duplicate verification, do not create two table with the same name.
 
 Example: 
 ```
@@ -51,16 +52,13 @@ CREATE TABLE Employes (ID int, nom char, age int);
 ```
 
 #### INSERT INTO tableName VALUES (v1, v2, ...);
+Insert a new row in a table. There is no verification for unique value or other type of constraint.
 
 Example: 
 ```
 INSERT INTO Employes VALUES (0, 'b', 32);
 ```
 
-#### SELECT
-
-There is 7 differents types of select queries that can be use, they must respect the following format:
-  
 #### SELECT (*) FROM tableName WHERE columnName op condition;` 
 Return the rows from a table that satisfy a condition.
 
@@ -110,6 +108,7 @@ SELECT AVG(age) FROM Employes;
 ```
 
 #### SELECT SUM(columnName) FROM tableName WHERE columnName op condition;
+Return the sum of a column of all the row that satisfy a certain condition.
 
 Example: 
 ```
@@ -117,6 +116,7 @@ SELECT SUM(age) FROM Employes WHERE nom > 'a';
 ```
 
 #### SELECT COUNT(*) FROM tableName WHERE columnName op condition;
+Return the number of row that satisfy a condition. Only `(*)` can be used.
 
 Example: 
 ```
