@@ -1,5 +1,7 @@
 # Homomorphic sgbd prototype
 
+Prototype of an SGBD using fully homomorphic encryption written in C++. The library [google/fully-homomorphic-encryption](https://github.com/google/fully-homomorphic-encryption) is used to transform some part of the C++ code into evaluation circuit supporting homomorphic computation. The library used in this project for the homomorphic operation is the [TFHE](https://github.com/tfhe/tfhe). 
+
 ## Installation
 1. Install the library [google/fully-homomorphic-encryption](https://github.com/google/fully-homomorphic-encryption). Follow the instructions of the README in the [/transpiler](https://github.com/google/fully-homomorphic-encryption/tree/main/transpiler) folder.
 2. Download the file on this repository and move them in the /transpiler/examples folder of the library.
