@@ -2,6 +2,8 @@
 
 Prototype of an SGBD using fully homomorphic encryption written in C++. The library [google/fully-homomorphic-encryption](https://github.com/google/fully-homomorphic-encryption) is used to transform some part of the C++ code into evaluation circuit supporting homomorphic computation. The library used in this project for the homomorphic operation is the [TFHE](https://github.com/tfhe/tfhe). 
 
+The google library only work on linux distribution and personnaly I only managed to make it work on an debian distribution (kali-linux).
+
 ## Installation
 1. Install the library [google/fully-homomorphic-encryption](https://github.com/google/fully-homomorphic-encryption). Follow the instructions of the README in the [/transpiler](https://github.com/google/fully-homomorphic-encryption/tree/main/transpiler) folder.
 2. Download the file on this repository and move them in the /transpiler/examples folder of the library.
@@ -40,13 +42,13 @@ The type of the column can be either `int` or `char` for the prototype using enc
 
 `Char` value must be declare with single quote: 'v'.
 
-The prototype does not manage constraint like primary key and other, therefor they cannot be declare in the script.
+The prototype does not manage constraint like primary key and other, therefore they cannot be declare in the script.
 
 ## Query
 To start using queries, choose the `query` function and enter the query on one line, with a `;` to end it.
 
 #### CREATE TABLE tableName (columnName1 type, columnName2 type, ...);
-Create a new table in the database. There is no duplicate verification, do not create two table with the same name.
+Create a new table in the database. There is no duplicate verification, do not create two tables with the same name.
 
 Example: 
 ```
@@ -84,7 +86,7 @@ SELECT DISTINCT(age) FROM Employes;
 
 #### SELECT (*) FROM tableName1 INNER JOIN tableName2 ON columnName1 = columnName2;
 
-Only `(*)` can be used. There is no verification to check if columnName2 is a foreign key of columnName1, the user is responsible in choosing the right column.
+Only `(*)` can be used. There is no verification to check if columnName2 is a foreign key of columnName1, the user is responsible for choosing the right column.
 
 Example: 
 ```
@@ -126,8 +128,14 @@ SELECT COUNT(*) FROM Employes WHERE age <= 32;
 ```
 
 ## Testing
-There is three different test that can be run, only the size of the data change.
+There is three different test for the queries that can be run, only the size of the data change.
 ```
-bazel run //transpiler/examples/[sgbd | sgbd_short | sgbd_cleartext]:[performance_test | performance_test_big | performance_test_verybig]
+bazel run //transpiler/examples/[sgbd|sgbd_short|sgbd_cleartext]:[performance_test|performance_test_big|performance_test_verybig]
+```
+
+To test the evaluation circuit, run the foloowing command:
+```
+bazel run //transpiler/examples/[sgbd|sgbd_short|sgbd_cleartext]:api_test
+
 ```
 
