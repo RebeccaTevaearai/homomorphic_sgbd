@@ -1,3 +1,15 @@
+/*
+*   File name: main.cc
+*   
+*   Description: 
+*   Generate the parameters for the FHE.
+*   Display the application menu and handle the parsing of the queries. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #include <cstddef>
 #include <stdlib.h>
 #include <ios>
@@ -11,6 +23,7 @@
 #include <utility>
 #include <exception>
 #include <stdexcept>
+#include <typeinfo>
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
@@ -80,7 +93,8 @@ vector<string> get_columns_from_select_query(string query) {
     return columns;
 }
 
-
+// A hand made function to parse user select query. 
+// It would be better to replace it with a library in the futur.
 void handle_select(string query, TFHESecretKeySet& key, TFHEParameters& params) {
     try {
         string tableName = get_tableName_from_select_query(query);
@@ -138,7 +152,12 @@ void handle_select(string query, TFHESecretKeySet& key, TFHEParameters& params) 
                 query_avg(tableName, columnsNames[0], key, params);
 
             } else if (queries[0] == "WHERE") {
-                query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                // stoi doesn't work if with char, convert it with (int)
+                if (where_params[2].find("\'") != string::npos) {
+                    query_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                } else {
+                    query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                }
 
             } else if (queries[0] == "JOIN") {
                 query_join(tableName, join_params[0], join_params[2], join_params[4], key, params);
@@ -147,11 +166,19 @@ void handle_select(string query, TFHESecretKeySet& key, TFHEParameters& params) 
         } else if (queries.size() == 2) {
             if (queries[1] == "WHERE") {
                 if (queries[0] == "SUM") {
-                    query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
-
+                    // stoi doesn't work if with char, convert it with (int)
+                    if (where_params[2].find("\'") != string::npos) {
+                        query_sum_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                    } else {
+                        query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                    }
                 } else if (queries[0] == "COUNT") {
-                    query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
-
+                    // stoi doesn't work with char, convert it with (int)
+                    if (where_params[2].find("\'") != string::npos) {
+                        query_count_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                    } else {
+                        query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                    }
                 } else {
                     std::cout << "Not implemented" << std::endl;
                 }
