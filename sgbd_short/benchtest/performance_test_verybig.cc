@@ -192,28 +192,6 @@ TEST(PerformanceTest, SELECT_ALL_FROM_EMPLOYES_INNER_JOIN_DEPARTEMENT) {
 
     EXPECT_EQ(result.size(), 60);
 
-    EXPECT_EQ(result[0], 0);
-    EXPECT_EQ(result[1], 1);
-    EXPECT_EQ(result[2], 0);
-    EXPECT_EQ(result[3], 0);
-    EXPECT_EQ(result[4], 1);
-    EXPECT_EQ(result[5], 0);
-    EXPECT_EQ(result[6], 0);
-    EXPECT_EQ(result[7], 0);
-    EXPECT_EQ(result[8], 0);
-    EXPECT_EQ(result[9], 1);
-    EXPECT_EQ(result[10], 0);
-    EXPECT_EQ(result[11], 0);
-    EXPECT_EQ(result[12], 1);
-    EXPECT_EQ(result[13], 0);
-    EXPECT_EQ(result[14], 0);
-    EXPECT_EQ(result[15], 0);
-    EXPECT_EQ(result[16], 0);
-    EXPECT_EQ(result[17], 0);
-    EXPECT_EQ(result[18], 0);
-    EXPECT_EQ(result[19], 0);
-
-
     std::cout << std::endl << "\t\t\t\t\tTotal time: "
         << absl::ToDoubleSeconds(end_time - start_time) << " secs" << std::endl;
     std::cout << "\t\t\t\t\t  CPU time: "
