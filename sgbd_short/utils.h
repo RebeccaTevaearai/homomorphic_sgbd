@@ -1,3 +1,11 @@
+/*
+*   File name: utils.h
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
+
 #ifndef SGBD_UTILS_H_
 #define SGBD_UTILS_H_
 
