@@ -9,4 +9,5 @@ INSERT INTO Employes VALUES (3, 'l', 49);
 
 INSERT INTO Departements VALUES (0, 'f', 2);
 INSERT INTO Departements VALUES (1, 'g', 0);
+INSERT INTO Departements VALUES (2, 'h', 2);
 
