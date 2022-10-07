@@ -1,25 +1,14 @@
 /*
-#include "transpiler/examples/sgbd/api/api_and.h"
-#include "transpiler/examples/sgbd/api/api_and_short.h"
-#include "transpiler/examples/sgbd/api/api_sum.h"
-#include "transpiler/examples/sgbd/api/api_sum_short.h"
-#include "transpiler/examples/sgbd/api/api_div.h"
-#include "transpiler/examples/sgbd/api/api_div_short.h"
-#include "transpiler/examples/sgbd/api/api_equality_int.h"
-#include "transpiler/examples/sgbd/api/api_equality_short.h"
-#include "transpiler/examples/sgbd/api/api_product.h"
-#include "transpiler/examples/sgbd/api/api_product_short.h"
-#include "transpiler/examples/sgbd/api/api_inequality_int.h"
-#include "transpiler/examples/sgbd/api/api_inequality_short.h"
-#include "transpiler/examples/sgbd/api/api_superior_int.h"
-#include "transpiler/examples/sgbd/api/api_superior_short.h"
-#include "transpiler/examples/sgbd/api/api_superior_or_equal_int.h"
-#include "transpiler/examples/sgbd/api/api_superior_or_equal_short.h"
-#include "transpiler/examples/sgbd/api/api_inferior_int.h"
-#include "transpiler/examples/sgbd/api/api_inferior_short.h"
-#include "transpiler/examples/sgbd/api/api_inferior_or_equal_int.h"
-#include "transpiler/examples/sgbd/api/api_inferior_or_equal_short.h"
+*   File name: api_test.cc
+*   
+*   Description: 
+*   Test of performance for all evaluation circuit. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
 */
+
 #include "transpiler/examples/sgbd/api_tfhe_and.h"
 #include "transpiler/examples/sgbd/api_tfhe_and_short.h"
 #include "transpiler/examples/sgbd/api_tfhe_sum.h"
