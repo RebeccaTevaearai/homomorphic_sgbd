@@ -188,38 +188,8 @@ TEST(PerformanceTest, SELECT_ALL_FROM_EMPLOYES_INNER_JOIN_DEPARTEMENT) {
         result.push_back(cipher_result[i].Decode());   
     }
 
-    EXPECT_EQ(result.size(), 30);
+    EXPECT_EQ(result.size(), 60);
 
-    EXPECT_EQ(result[0], 0);
-    EXPECT_EQ(result[1], 1);
-    EXPECT_EQ(result[2], 0);
-    EXPECT_EQ(result[3], 0);
-    EXPECT_EQ(result[4], 0);
-    EXPECT_EQ(result[5], 0);
-    EXPECT_EQ(result[6], 0);
-    EXPECT_EQ(result[7], 0);
-    EXPECT_EQ(result[8], 0);
-    EXPECT_EQ(result[9], 1);
-    EXPECT_EQ(result[10], 0);
-    EXPECT_EQ(result[11], 0);
-    EXPECT_EQ(result[12], 0);
-    EXPECT_EQ(result[13], 0);
-    EXPECT_EQ(result[14], 0);
-    EXPECT_EQ(result[15], 0);
-    EXPECT_EQ(result[16], 0);
-    EXPECT_EQ(result[17], 0);
-    EXPECT_EQ(result[18], 0);
-    EXPECT_EQ(result[19], 0);
-    EXPECT_EQ(result[20], 0);
-    EXPECT_EQ(result[21], 0);
-    EXPECT_EQ(result[22], 0);
-    EXPECT_EQ(result[23], 0);
-    EXPECT_EQ(result[24], 0);
-    EXPECT_EQ(result[25], 0);
-    EXPECT_EQ(result[26], 0);
-    EXPECT_EQ(result[27], 0);
-    EXPECT_EQ(result[28], 0);
-    EXPECT_EQ(result[29], 1);
 
     std::cout << std::endl << "\t\t\t\t\tTotal time: "
         << absl::ToDoubleSeconds(end_time - start_time) << " secs" << std::endl;
