@@ -1,3 +1,14 @@
+/*
+*   File name: queries.h
+*   
+*   Description: 
+*   Handle the different queries from client side. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #ifndef SGBD_QUERIES_H_
 #define SGBD_QUERIES_H_
 
@@ -18,8 +29,6 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-//#include "tfhe/tfhe.h"
-//#include "tfhe/tfhe_io.h"
 #include "transpiler/data/cleartext_data.h"
 #include "xls/common/logging/logging.h"
 
