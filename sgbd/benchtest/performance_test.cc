@@ -1,3 +1,14 @@
+/*
+*   File name: performance_test.cc
+*   
+*   Description: 
+*   Test of performance for all the type of queries for n = 4 (n: number of entries in the table). 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #include "transpiler/examples/sgbd/utils.h"
 #include "transpiler/examples/sgbd/queries.h"
 #include "transpiler/examples/sgbd/server.h"
