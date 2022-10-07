@@ -144,9 +144,9 @@ void handle_select(string query) {
 
             } else if (queries[0] == "WHERE") {
                 if (where_params[2].find("\'") != string::npos) {
-                    query_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                    query_where(tableName, where_params[0], where_params[1], (int)where_params[2][1]);
                 } else {
-                    query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                    query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]));
                 }
             } else if (queries[0] == "JOIN") {
                 query_join(tableName, join_params[0], join_params[2], join_params[4]);
@@ -156,15 +156,15 @@ void handle_select(string query) {
             if (queries[1] == "WHERE") {
                 if (queries[0] == "SUM") {
                     if (where_params[2].find("\'") != string::npos) {
-                        query_sum_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                        query_sum_where(tableName, where_params[0], where_params[1], (int)where_params[2][1]);
                     } else {
-                        query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                        query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]));
                     }
                 } else if (queries[0] == "COUNT") {
                     if (where_params[2].find("\'") != string::npos) {
-                        query_count_where(tableName, where_params[0], where_params[1], s(int)where_params[2][1], key, params);
+                        query_count_where(tableName, where_params[0], where_params[1], (int)where_params[2][1]);
                     } else {
-                        query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                        query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]));
                     }
                 } else {
                     std::cout << "Not implemented" << std::endl;
