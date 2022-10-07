@@ -1,45 +1,39 @@
+/*
+*   File name: server.h
+*   
+*   Description: 
+*   Compute the queries with FHE. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #ifndef SGBD_SERVER_H_
 #define SGBD_SERVER_H_
 
 #include <stdexcept>
+#include <exception>
 #include <stdlib.h>
 
 #include <ios>
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <array>
 #include <unistd.h>
 #include <stdio.h>
 #include <tuple>
-#include <exception>
+
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-#include "api/api_equality_int.h"
-#include "api/api_inequality_int.h"
-#include "api/api_inferior_or_equal_int.h"
-#include "api/api_sum.h"
-#include "api/api_superior_or_equal_int.h"
 #include "tfhe/tfhe.h"
 #include "tfhe/tfhe_io.h"
 #include "transpiler/data/tfhe_data.h"
 #include "xls/common/logging/logging.h"
 
 #include "transpiler/examples/sgbd/utils.h"
-
-#include "transpiler/examples/sgbd/api/api_and.h"
-#include "transpiler/examples/sgbd/api/api_sum.h"
-#include "transpiler/examples/sgbd/api/api_div.h"
-#include "transpiler/examples/sgbd/api/api_equality_int.h"
-#include "transpiler/examples/sgbd/api/api_product.h"
-#include "transpiler/examples/sgbd/api/api_inequality_int.h"
-#include "transpiler/examples/sgbd/api/api_superior_int.h"
-#include "transpiler/examples/sgbd/api/api_superior_or_equal_int.h"
-#include "transpiler/examples/sgbd/api/api_inferior_int.h"
-#include "transpiler/examples/sgbd/api/api_inferior_or_equal_int.h"
 
 #include "transpiler/examples/sgbd/api_tfhe_and.h"
 #include "transpiler/examples/sgbd/api_tfhe_sum.h"
@@ -137,6 +131,7 @@ Table * select_distinct(vector<Tfhe<int>>& cipher_result, vector<Tfhe<int>>& cip
 
     int table_size = database.tables[i].c_int[j].values.size();
     
+    // First entry is not treated as it will always be unique.
     for (int k = 1; k < table_size; ++k) {
         for (int l = k - 1; l >= 0; --l) {
             if (l == (k - 1)) {
@@ -173,17 +168,26 @@ void sum(Tfhe<int>& cipher_result, string tableName, string columnName, const TF
 
     int table_size = database.tables[i].c_int[j].values.size();
 
+    // Return an encrypted 0.
+    if (table_size == 0) {
+        XLS_CHECK_OK(inequality_int(cipher_result, cipher_result, cipher_result, bk));
+        return;
+    }
+
     if (table_size > 1) {
         XLS_CHECK_OK(tfhe_sum(cipher_result, database.tables[i].c_int[j].values[0], database.tables[i].c_int[j].values[1], bk));
         
         for (int k = 2; k < table_size; ++k) {
             XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, database.tables[i].c_int[j].values[k], bk));
         }
-    } else {
+
+    // If table size is equal to 1, an encrypted 0 must be put in cipher_result to perform the sum correctly.
+    } else if (table_size == 1) {
         XLS_CHECK_OK(inequality_int(cipher_result, cipher_result, cipher_result, bk));
         XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, database.tables[i].c_int[j].values[0], bk));
     }
 
+    return;
 }
 
 
@@ -194,6 +198,15 @@ void avg(Tfhe<int>& cipher_r, Tfhe<int>& cipher_result, vector<Tfhe<int>>& ciphe
 
     int table_size = database.tables[i].c_int[j].values.size();
 
+    // return an encrypted 0
+    if (table_size == 0) {
+        XLS_CHECK_OK(inequality_int(cipher_result, cipher_result, cipher_result, bk));
+        return;
+    }
+
+    // Compute the number of entry.
+    // The table size cannot be use directly as it need to be encrypted in order to be used in the other FHE computation.
+    // The total count is contained in the cipher_tmp[0].
     for(int k = 0; k < table_size; ++k) {
         XLS_CHECK_OK(equality_int(cipher_tmp[k], database.tables[i].c_int[j].values[k], database.tables[i].c_int[j].values[k], bk));
         if (k > 0) {
@@ -201,19 +214,24 @@ void avg(Tfhe<int>& cipher_r, Tfhe<int>& cipher_result, vector<Tfhe<int>>& ciphe
         }
     }
 
+    // Compute the sum of all the entries
     if (table_size > 1) {
         XLS_CHECK_OK(tfhe_sum(cipher_result, database.tables[i].c_int[j].values[0], database.tables[i].c_int[j].values[1], bk));
         
         for (int k = 2; k < table_size; ++k) {
             XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, database.tables[i].c_int[j].values[k], bk));
         }
-    } else {
+    // If the table size is 1, an encrypted 0 must be put in the cipher_result befor computing the sum.
+    // This is what the inequality circuit does.
+    } else if (table_size == 1) {
         XLS_CHECK_OK(inequality_int(cipher_result, cipher_result, cipher_result, bk));
         XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, database.tables[i].c_int[j].values[0], bk));
     }
 
+    // Compute the division between the number of entries and the sum (take a lot of time).
     XLS_CHECK_OK(tfhe_div(cipher_r, cipher_result, cipher_tmp[0], bk));
-
+    
+    return;
 }
 
 
@@ -237,32 +255,45 @@ tuple<int, int> inner_join(vector<Tfhe<int>>& cipher_result, string tableName1, 
     }
 
     return std::make_tuple(table_1_size, table_2_size);
-
 }
 
 
 void sum_where(Tfhe<int>& cipher_result, vector<Tfhe<int>>& cipher_tmp, vector<Tfhe<int>>& cipher_tmp_2, string tableName, string columnName, Tfhe<int>& condition_cipher, string op, const TFheGateBootstrappingCloudKeySet* bk) {
+    
     int index = database.getTableIndex(tableName);
     int size = database.tables[index].getNbRow();
 
+    // Return an encrypted 0.
+    if (size == 0) {
+        XLS_CHECK_OK(inequality_int(cipher_result, cipher_result, cipher_result, bk));
+        return;
+    }
+
     int column_index = database.tables[index].getColumnIndex(columnName);
 
+    // Stock the result of the where function in the cipher_tmp. 
     select_where(cipher_tmp, tableName, columnName, condition_cipher, op, bk);
 
+    // Create an intermediate table. Multiply every entry by the result of the previous where function.
+    // Filtred row are put at 0 while good row stay with their value.
     for (int i = 0; i < size; ++i) {
         XLS_CHECK_OK(tfhe_product(cipher_tmp_2[i], cipher_tmp[i], database.tables[index].c_int[column_index].values[i], bk));
     }
 
+    // Compute the sum on the new table.
     if (size > 1) {
         XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_tmp_2[0], cipher_tmp_2[1], bk));
         
         for (int k = 2; k < size; ++k) {
             XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, cipher_tmp_2[k], bk));
         }
-    } else {
+    // If size equal 1 an encrypted 0 must be put in the cipher_result to perform the sum correctly. 
+    } else if (size == 1) {
         XLS_CHECK_OK(inequality_int(cipher_result, cipher_tmp_2[0], cipher_tmp_2[0], bk));
         XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, cipher_tmp_2[0], bk));
     }
+
+    return;
 }
 
 
@@ -273,17 +304,24 @@ void count_where(Tfhe<int>& cipher_result, vector<Tfhe<int>>& cipher_tmp, string
     int index = database.getTableIndex(tableName);
     int size = database.tables[index].getNbRow();
 
+    // Return an encrypted 0.
+    if (size == 0) {
+        XLS_CHECK_OK(inequality_int(cipher_result, cipher_result, cipher_result, bk));
+        return;
+    }
+
     if (size > 1) {
         XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_tmp[0], cipher_tmp[1], bk));
         
         for (int k = 2; k < size; ++k) {
             XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, cipher_tmp[k], bk));
         }
-    } else {
+    } else if (size == 1) {
         XLS_CHECK_OK(inequality_int(cipher_result, cipher_tmp[0], cipher_tmp[0], bk));
         XLS_CHECK_OK(tfhe_sum(cipher_result, cipher_result, cipher_tmp[0], bk));
     }
 
+    return;
 }
 
 
