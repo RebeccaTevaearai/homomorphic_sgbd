@@ -1,3 +1,14 @@
+/*
+*   File name: performance_test.cc
+*   
+*   Description: 
+*   Test of performance for all the type of queries for n = 4 (n: number of entries in the table). 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #include "transpiler/examples/sgbd_short/utils.h"
 #include "transpiler/examples/sgbd_short/queries.h"
 #include "transpiler/examples/sgbd_short/server.h"
@@ -146,7 +157,7 @@ TEST(PerformanceTest, SELECT_ALL_FROM_EMPLOYES_INNER_JOIN_DEPARTEMENT) {
         result.push_back(cipher_result[i].Decrypt(key));   
     }
 
-    EXPECT_EQ(result.size(), 8);
+    EXPECT_EQ(result.size(), 12);
 
     EXPECT_EQ(result[0], 0);
     EXPECT_EQ(result[1], 1);
@@ -156,6 +167,11 @@ TEST(PerformanceTest, SELECT_ALL_FROM_EMPLOYES_INNER_JOIN_DEPARTEMENT) {
     EXPECT_EQ(result[5], 0);
     EXPECT_EQ(result[6], 0);
     EXPECT_EQ(result[7], 0);
+    EXPECT_EQ(result[8], 0);
+    EXPECT_EQ(result[9], 0);
+    EXPECT_EQ(result[10], 0);
+    EXPECT_EQ(result[11], 0);
+
 
     std::cout << std::endl << "\t\t\t\t\tTotal time: "
         << absl::ToDoubleSeconds(end_time - start_time) << " secs" << std::endl;
@@ -311,3 +327,4 @@ TEST(PerformanceTest, SELECT_SUM_AGE_FROM_EMPLOYES_WHERE_AGE_SUPERIOR_28) {
         << (cpu_end_time - cpu_start_time) / 1'000'000 << " secs" << std::endl << std::endl;
     
 }
+
