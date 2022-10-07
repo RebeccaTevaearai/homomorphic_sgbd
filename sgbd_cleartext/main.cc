@@ -1,3 +1,16 @@
+/*
+*   File name: main.cc
+*   
+*   Description: 
+*   Generate the parameters for the FHE.
+*   Display the application menu and handle the parsing of the queries. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
+
 #include <cstddef>
 #include <stdlib.h>
 #include <ios>
@@ -15,8 +28,6 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-//#include "tfhe/tfhe.h"
-//#include "tfhe/tfhe_io.h"
 #include "transpiler/data/cleartext_data.h"
 #include "xls/common/logging/logging.h"
 
@@ -26,12 +37,6 @@
 #include "transpiler/examples/sgbd_cleartext/utils.h"
 #include "transpiler/examples/sgbd_cleartext/server.h"
 #include "transpiler/examples/sgbd_cleartext/queries.h"
-
-//constexpr int kMainMinimumLambda = 120;
-
-// Random seed for key generation
-// Note: In real applications, a cryptographically secure seed needs to be used.
-//constexpr std::array<uint32_t, 3> kSeed = {314, 1592, 657};
 
 using std::string;
 using std::vector;
@@ -138,8 +143,11 @@ void handle_select(string query) {
                 query_avg(tableName, columnsNames[0]);
 
             } else if (queries[0] == "WHERE") {
-                query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]));
-
+                if (where_params[2].find("\'") != string::npos) {
+                    query_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                } else {
+                    query_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                }
             } else if (queries[0] == "JOIN") {
                 query_join(tableName, join_params[0], join_params[2], join_params[4]);
             }
@@ -147,11 +155,17 @@ void handle_select(string query) {
         } else if (queries.size() == 2) {
             if (queries[1] == "WHERE") {
                 if (queries[0] == "SUM") {
-                    query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]));
-
+                    if (where_params[2].find("\'") != string::npos) {
+                        query_sum_where(tableName, where_params[0], where_params[1], (int)where_params[2][1], key, params);
+                    } else {
+                        query_sum_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                    }
                 } else if (queries[0] == "COUNT") {
-                    query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]));
-
+                    if (where_params[2].find("\'") != string::npos) {
+                        query_count_where(tableName, where_params[0], where_params[1], s(int)where_params[2][1], key, params);
+                    } else {
+                        query_count_where(tableName, where_params[0], where_params[1], stoi(where_params[2]), key, params);
+                    }
                 } else {
                     std::cout << "Not implemented" << std::endl;
                 }
