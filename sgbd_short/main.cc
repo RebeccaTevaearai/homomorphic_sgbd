@@ -163,6 +163,7 @@ void handle_select(string query, TFHESecretKeySet& key, TFHEParameters& params) 
 
         } else if (queries.size() == 2) {
             if (queries[1] == "WHERE") {
+                if (queries[0] == "SUM") {
                     // stoi doesn't work if with char, convert it with (int)
                     if (where_params[2].find("\'") != string::npos) {
                         query_sum_where(tableName, where_params[0], where_params[1], (short)where_params[2][1], key, params);
