@@ -1,3 +1,14 @@
+/*
+*   File name: queries.h
+*   
+*   Description: 
+*   Handle the different queries from client side. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #ifndef SGBD_QUERIES_H_
 #define SGBD_QUERIES_H_
 
@@ -192,6 +203,7 @@ void query_where(string tableName, string columnName, string op, int condition, 
     vector<string> colNames = t->getColumnName();
     int nb_col = colNames.size();
 
+    // Use for the display
     result_row.push_back(colNames);
 
     for (int i = 0; i < t->getNbRow(); ++i) {
@@ -268,6 +280,7 @@ void query_distinct(string tableName, string columnName, TFHESecretKeySet& key, 
     vector<string> colNames = t->getColumnName();
     int nb_col = colNames.size();
 
+    // Use for the display
     result_row.push_back(colNames);
 
     for (int i = 0; i < t->getNbRow(); ++i) {
