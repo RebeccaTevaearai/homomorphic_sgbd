@@ -1,3 +1,14 @@
+/*
+*   File name: server.h
+*   
+*   Description: 
+*   Compute the queries with FHE. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #ifndef SGBD_SERVER_H_
 #define SGBD_SERVER_H_
 
@@ -18,30 +29,10 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-//#include "api/api_equality_short.h"
-//#include "api/api_inequality_short.h"
-//#include "api/api_inferior_or_equal_int.h"
-//#include "api/api_sum.h"
-//#include "api/api_superior_or_equal_int.h"
-//#include "tfhe/tfhe.h"
-//#include "tfhe/tfhe_io.h"
 #include "transpiler/data/cleartext_data.h"
 #include "xls/common/logging/logging.h"
 
 #include "transpiler/examples/sgbd_cleartext/utils.h"
-
-/*
-#include "transpiler/examples/sgbd_short/api/api_and.h"
-#include "transpiler/examples/sgbd_short/api/api_sum.h"
-#include "transpiler/examples/sgbd_short/api/api_div.h"
-#include "transpiler/examples/sgbd_short/api/api_equality_int.h"
-#include "transpiler/examples/sgbd_short/api/api_product.h"
-#include "transpiler/examples/sgbd_short/api/api_inequality_int.h"
-#include "transpiler/examples/sgbd_short/api/api_superior_int.h"
-#include "transpiler/examples/sgbd_short/api/api_superior_or_equal_int.h"
-#include "transpiler/examples/sgbd_short/api/api_inferior_int.h"
-#include "transpiler/examples/sgbd_short/api/api_inferior_or_equal_int.h"
-*/
 
 #include "transpiler/examples/sgbd_cleartext/api_tfhe_and_short.h"
 #include "transpiler/examples/sgbd_cleartext/api_tfhe_sum_short.h"
