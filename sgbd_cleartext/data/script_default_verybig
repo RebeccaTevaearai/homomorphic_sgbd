@@ -27,7 +27,4 @@ INSERT INTO Employes VALUES (19, 'e', 22);
 INSERT INTO Departements VALUES (0, 'f', 3);
 INSERT INTO Departements VALUES (1, 'g', 0);
 INSERT INTO Departements VALUES (2, 'm', 9);
-INSERT INTO Departements VALUES (3, 'c', 5);
-INSERT INTO Departements VALUES (4, 'p', 0);
-INSERT INTO Departements VALUES (5, 'g', 2);
 
