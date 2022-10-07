@@ -1,3 +1,14 @@
+/*
+*   File name: queries.h
+*   
+*   Description: 
+*   Handle the different queries from client side. 
+*
+*
+*   Author: Rébecca Tevaearai
+*   Date: October 2022
+*/
+
 #ifndef SGBD_QUERIES_H_
 #define SGBD_QUERIES_H_
 
